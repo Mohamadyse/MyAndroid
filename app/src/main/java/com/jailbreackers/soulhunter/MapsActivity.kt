@@ -25,22 +25,22 @@ import android.widget.TextView
 import com.google.android.gms.maps.model.*
 import java.util.*
 
-//Author Chaitali
+
 @SuppressLint("ByteOrderMark")
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private lateinit var  mMap: GoogleMap
+    private lateinit var mMap: GoogleMap
 
     lateinit var locationManager: LocationManager
     private val LOCATION_REQUEST_CODE = 101
-    private var mMaker: Marker?=null
+    private var mMaker: Marker? = null
 
     private var sound: SoundPlayer? = null
 
     @SuppressLint("MissingPermission")
-    var scoreLabel: TextView?=null
-    var distancelabel: TextView?=null
-    var caloriesLabel:TextView?=null
+    var scoreLabel: TextView? = null
+    var distancelabel: TextView? = null
+    var caloriesLabel: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,15 +50,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        scoreLabel=findViewById<View>(R.id.scoreLabel) as TextView
-        distancelabel=findViewById<View>(R.id.distancelabel) as TextView
-        caloriesLabel= findViewById<View>(R.id.calories)as TextView
+        scoreLabel = findViewById<View>(R.id.scoreLabel) as TextView
+        distancelabel = findViewById<View>(R.id.distancelabel) as TextView
+        caloriesLabel = findViewById<View>(R.id.calories) as TextView
 
         scoreLabel!!.setText(" Score : 00 ")
         distancelabel!!.setText(" Distance : 00 m ")
         caloriesLabel!!.setText("Calories: 00")
 
         sound = SoundPlayer(this)
+
+    }
+
+    override
+    fun onBackPressed() {
+        var intent = Intent(applicationContext, HomeMenuActivity::class.java)
+        startActivity(intent)
+        finish()
 
     }
 
@@ -69,7 +77,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         getUserCurrentLocation = GetUserCurrentLocation()
 
         if (ActivityCompat.checkSelfPermission(this@MapsActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED ) {
+                PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true)
             mMap.getUiSettings().setMyLocationButtonEnabled(true)
             mMap.getUiSettings().setZoomControlsEnabled(true)
@@ -78,7 +86,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     LocationManager.GPS_PROVIDER,
                     3,
                     5f,
-                    getUserCurrentLocation )
+                    getUserCurrentLocation)
+
+            val myThread = MyThread()
+            myThread.start()
+
         } else {
             ActivityCompat.requestPermissions(this@MapsActivity,
                     arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION),
@@ -99,85 +111,84 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-       try
-        {
+        try {
             // Customise the styling of the base map using a JSON object defined
             // in a raw resource file.
             val success = googleMap.setMapStyle(
                     MapStyleOptions.loadRawResourceStyle(
                             this, R.raw.mapstyle))
-            if (!success)
-            {
-                Log.e("error","Style parsing failed.")
+            if (!success) {
+                Log.e("error", "Style parsing failed.")
             }
-        }
-        catch (e: Resources.NotFoundException) {
+        } catch (e: Resources.NotFoundException) {
             Log.e("error", "Can't find style. Error: ", e)
         }
         checkPermission()
     }
 
 
+    lateinit var changingLocation: Location
 
-    inner class GetUserCurrentLocation:LocationListener {
 
-        var latitude : Double = 0.toDouble()
+    inner class GetUserCurrentLocation : LocationListener {
+
+        var latitude: Double = 0.toDouble()
         var longitide: Double = 0.toDouble()
-       // Latitude: N 59° 19' 58.0372" | Longitude: E 18° 3' 52.1572"
+        // Latitude: N 59° 19' 58.0372" | Longitude: E 18° 3' 52.1572"
 
-        constructor()
-        {
+        constructor() {
 
-            latitude=59.331210
-            longitide=18.061525
+            latitude = 59.331210
+            longitide = 18.061525
         }
 
 
         override fun onLocationChanged(location: Location?) {
+            changingLocation = location!!
 
 
-            if(mMaker!=null)
-            {
-                mMap.clear()
+//            if(mMaker!=null)
+//            {
+//                mMap.clear()
+//
+//            }
 
-            }
+            //    latitude = location!!.latitude
+            //     longitide = location!!.longitude
 
-            latitude = location!!.latitude
-            longitide = location!!.longitude
-
-            displayCoin(location)
+            //   displayCoin(location)
 
 
-
-            val latLng = LatLng(latitude, longitide)
-
-            //Resize marker on map
-            val icon: BitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.runner)
-            val height = 140
-            val width = 120
-            val bitMapDraw = resources.getDrawable(R.drawable.runner) as BitmapDrawable
-            val b = bitMapDraw.bitmap
-            val playerMarker = Bitmap.createScaledBitmap(b, width, height, false)
-
-            //Put marker on map
-            mMaker = mMap!!.addMarker(MarkerOptions()
-                    .position(latLng)
-                    .title("You Are Here !!!!")
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.runner))
-                    .icon(BitmapDescriptorFactory.fromBitmap(playerMarker)))
-
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,12f))
-
-            //Get Location Details
-            val geocoder = Geocoder(this@MapsActivity)
-            // Address found using the Geocoder.
-            var addresses: List<Address> = emptyList()
-            addresses = geocoder.getFromLocation(latitude,longitide,1)
-
-            val cityName = addresses[0].getAddressLine(0)
-
-            //Show Location Details
-            Toast.makeText(this@MapsActivity," Current Location Is-"+ cityName , Toast.LENGTH_SHORT).show()
+//
+//            val latLng = LatLng(latitude, longitide)
+//
+//            //Resize marker on map
+//            val icon: BitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.runner)
+//            val height = 140
+//            val width = 120
+//            val bitMapDraw = resources.getDrawable(R.drawable.runner) as BitmapDrawable
+//            val b = bitMapDraw.bitmap
+//            val playerMarker = Bitmap.createScaledBitmap(b, width, height, false)
+//
+//            //Put marker on map
+//            mMaker = mMap!!.addMarker(MarkerOptions()
+//                    .position(latLng)
+//                    .title("You Are Here !!!!")
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.runner))
+//                    .icon(BitmapDescriptorFactory.fromBitmap(playerMarker)))
+//
+//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,12f))
+//
+//            //Get Location Details
+//            val geocoder = Geocoder(this@MapsActivity)
+//            // Address found using the Geocoder.
+//            var addresses: List<Address> = emptyList()
+//            addresses = geocoder.getFromLocation(latitude,longitide,1)
+//
+//            val cityName = addresses[0].getAddressLine(0)
+//
+//            //Show Location Details
+//            Toast.makeText(this@MapsActivity," Current Location Is-"+ cityName , Toast.LENGTH_SHORT).show()
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
@@ -200,8 +211,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     fun createCoins(location: Location) {
         // in the next step we should get the marker location and create the location of the coins close to marker location
-        var lat:Double=location.latitude
-        var log:Double=location.longitude
+        var lat: Double = location.latitude
+        var log: Double = location.longitude
 
         coins.add(
 
@@ -209,8 +220,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         (R.drawable.coin_icon)
                         , "20 Dollar"
                         , 10.0
-                        ,  lat+ generate()
-                        ,  log+ generate()
+                        , lat + generate()
+                        , log + generate()
                 )
 
 
@@ -221,8 +232,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         (R.drawable.coin_icon)
                         , "20 Dollar"
                         , 60.0
-                        ,  lat + generate()
-                        ,  log + generate()
+                        , lat + generate()
+                        , log + generate()
                 )
 
 
@@ -233,14 +244,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         (R.drawable.coin_icon)
                         , "20 Dollar"
                         , 125.0
-                        ,  lat + generate()
-                        ,  log + generate()
+                        , lat + generate()
+                        , log + generate()
                 )
 
 
         )
 
     }
+
     var distance: Float = 0f
     var isTheFirstTime = true
     var score: Double = 0.0
@@ -249,17 +261,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (isTheFirstTime) {
             createCoins(location)
-            oldLocation=location
+            oldLocation = location
             isTheFirstTime = false
         }
-        distance = distance+location.distanceTo(oldLocation)
-        distancelabel!!.setText(" Distance: ${distance.toInt() } m ")
-        caloriesLabel!!.setText("Calories: ${   (distance * 15/320).toInt()   } ")
+        distance = distance + location.distanceTo(oldLocation)
+        distancelabel!!.setText(" Distance: ${distance.toInt()} m ")
+        caloriesLabel!!.setText("Calories: ${(distance * 15 / 320).toInt()} ")
         //update the textview
 
 
-
-        oldLocation=location
+        oldLocation = location
 
         val bitMapDraw = resources.getDrawable(R.drawable.coin_icon) as BitmapDrawable
         val b = bitMapDraw.bitmap
@@ -292,9 +303,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     //play Sound
 
 
-
-
-
                     // remove from arraylist
 
 
@@ -306,33 +314,105 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //send the intent to display the score
         var preferences = getSharedPreferences("PREFS", 0)
         var editor = preferences.edit()
-        editor.putInt("lastScore", score.toInt() )
+        editor.putInt("lastScore", score.toInt())
         editor.commit()
     }
 
-    fun generate():Double
-    {
+    fun generate(): Double {
         var p = Math.random()
 
         var randomSign = Math.random()
 
-        if(randomSign < 0.5) {
+        if (randomSign < 0.5) {
             p *= -1
         }
 
 
-        return p/200
+        return p / 200
 
     }
 
 
+    inner class MyThread : Thread {
+
+        var latitude: Double = 0.toDouble()
+        var longitide: Double = 0.toDouble()
+
+        constructor() : super() {
 
 
-override
-fun onBackPressed(){
-    var intent = Intent(applicationContext, HomeMenuActivity::class.java)
-    startActivity(intent)
-    finish()
+            latitude = 59.331210
+            longitide = 18.061525
+
+        }
+
+        override fun run() {
+            while (true) {
+
+                runOnUiThread {
+                    /*   if(mMaker!=null)
+                   {
+                       mMap.clear()
+
+                   }*/
+
+                    latitude = changingLocation!!.latitude
+                    longitide = changingLocation!!.longitude
+
+                     // displayCoin(changingLocation)
+
+
+                    val latLng = LatLng(latitude, longitide)
+
+
+                    val icon: BitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.runner)
+                    val height = 140
+                    val width = 120
+                    val bitMapDraw = resources.getDrawable(R.drawable.runner) as BitmapDrawable
+                    val b = bitMapDraw.bitmap
+                    val playerMarker = Bitmap.createScaledBitmap(b, width, height, false)
+
+
+                    mMaker = mMap!!.addMarker(MarkerOptions()
+                            .position(latLng)
+                            .title("You Are Here !!!!")
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.runner))
+                            .icon(BitmapDescriptorFactory.fromBitmap(playerMarker)))
+
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12f))
+
+//
+//                    val geocoder = Geocoder(this@MapsActivity)
+//                    // Address found using the Geocoder.
+//                    var addresses: List<Address> = emptyList()
+//                    addresses = geocoder.getFromLocation(latitude, longitide, 1)
+//
+//                    val cityName = addresses[0].getAddressLine(0)
+
+                    //Show Location Details
+                  //  Toast.makeText(this@MapsActivity, " Current Location Is-" + cityName, Toast.LENGTH_SHORT).show()
+                }
+                Thread.sleep(5000)
+            }
+        }
+
+    }
+
 
 }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
