@@ -23,6 +23,8 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import com.google.android.gms.maps.model.*
+import kotlinx.android.synthetic.main.activity_maps.*
+import java.text.SimpleDateFormat
 import java.util.*
 
 //Author Chaitali
@@ -41,7 +43,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     var scoreLabel: TextView?=null
     var distancelabel: TextView?=null
     var caloriesLabel:TextView?=null
-
+    val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
+    val currentDate = sdf.format(Date())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -54,9 +57,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         distancelabel=findViewById<View>(R.id.distancelabel) as TextView
         caloriesLabel= findViewById<View>(R.id.calories)as TextView
 
-        scoreLabel!!.setText(" Score : 00 ")
-        distancelabel!!.setText(" Distance : 00 m ")
-        caloriesLabel!!.setText("Calories: 00")
+        scoreLabel!!.text = " Score : 00 "
+        distancelabel!!.text = " Distance : 00 m "
+        caloriesLabel!!.text = "Calories: 00"
 
         sound = SoundPlayer(this)
 
@@ -70,9 +73,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (ActivityCompat.checkSelfPermission(this@MapsActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED ) {
-            mMap.setMyLocationEnabled(true)
-            mMap.getUiSettings().setMyLocationButtonEnabled(true)
-            mMap.getUiSettings().setZoomControlsEnabled(true)
+            mMap.isMyLocationEnabled = true
+            mMap.uiSettings.isMyLocationButtonEnabled = true
+            mMap.uiSettings.isZoomControlsEnabled = true
             locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
             locationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
@@ -99,7 +102,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        try
+       try
         {
             // Customise the styling of the base map using a JSON object defined
             // in a raw resource file.
@@ -123,7 +126,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         var latitude : Double = 0.toDouble()
         var longitide: Double = 0.toDouble()
-        // Latitude: N 59° 19' 58.0372" | Longitude: E 18° 3' 52.1572"
+       // Latitude: N 59° 19' 58.0372" | Longitude: E 18° 3' 52.1572"
 
         constructor()
         {
@@ -143,7 +146,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             latitude = location!!.latitude
-            longitide = location!!.longitude
+            longitide = location.longitude
 
             displayCoin(location)
 
@@ -160,7 +163,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val playerMarker = Bitmap.createScaledBitmap(b, width, height, false)
 
             //Put marker on map
-            mMaker = mMap!!.addMarker(MarkerOptions()
+            mMaker = mMap.addMarker(MarkerOptions()
                     .position(latLng)
                     .title("You Are Here !!!!")
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.runner))
@@ -175,7 +178,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),
                     2000, null)
 
-            // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,12f))
+           // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,12f))
 
             //Get Location Details
             val geocoder = Geocoder(this@MapsActivity)
@@ -186,7 +189,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val cityName = addresses[0].getAddressLine(0)
 
             //Show Location Details
-            //     Toast.makeText(this@MapsActivity," Current Location Is-"+ cityName , Toast.LENGTH_SHORT).show()
+       //     Toast.makeText(this@MapsActivity," Current Location Is-"+ cityName , Toast.LENGTH_SHORT).show()
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
@@ -214,22 +217,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         coins.add(
 
-                Coin(
-                        (R.drawable.coin_icon)
-                        , "20 Dollar"
-                        , 10.0
-                        ,  lat+ generate()
-                        ,  log+ generate()
-                )
+                        Coin(
+                                (R.drawable.treasure_box)
+                                , "20 Dollar"
+                                , 10
+                                ,  lat+ generate()
+                                ,  log+ generate()
+                        )
 
 
         )
         coins.add(
 
                 Coin(
-                        (R.drawable.coin_icon)
+                        (R.drawable.treasure_box)
                         , "20 Dollar"
-                        , 60.0
+                        , 60
                         ,  lat + generate()
                         ,  log + generate()
                 )
@@ -239,9 +242,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         coins.add(
 
                 Coin(
-                        (R.drawable.coin_icon)
+                        (R.drawable.treasure_box)
                         , "20 Dollar"
-                        , 125.0
+                        , 125
                         ,  lat + generate()
                         ,  log + generate()
                 )
@@ -251,8 +254,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
     var distance: Float = 0f
+    var calories: Float = 0f
     var isTheFirstTime = true
-    var score: Double = 0.0
+    var score: Int=0
 
     fun displayCoin(location: Location) {
 
@@ -262,15 +266,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             isTheFirstTime = false
         }
         distance = distance+location.distanceTo(oldLocation)
-        distancelabel!!.setText(" Distance:${distance.toInt()} m")
-        caloriesLabel!!.setText("Calories: ${   (distance * 15/320).toInt()   } ")
+        calories = (distance * 15/320)
+        distancelabel!!.text = " Distance:${distance.toInt()} m"
+        caloriesLabel!!.text = "Calories: ${  calories.toInt()   } "
         //update the textview
 
 
 
         oldLocation=location
 
-        val bitMapDraw = resources.getDrawable(R.drawable.coin_icon) as BitmapDrawable
+        val bitMapDraw = resources.getDrawable(R.drawable.treasure_box) as BitmapDrawable
         val b = bitMapDraw.bitmap
         val playerMarker = Bitmap.createScaledBitmap(b, 180, 180, false)
 
@@ -278,34 +283,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         for (i in 0..coins.size - 1) {
 
 
-            if (coins[i].isCatch == false) {
+            //    if (coins[i].isCatch == false) {
 
-                if (location.distanceTo(coins[i].location) > 50) {
+            if (location.distanceTo(coins[i].location) > 50) {
 
-                    val coinLocation = LatLng(coins[i].location!!.latitude, coins[i].location!!.longitude)
+                val coinLocation = LatLng(coins[i].location!!.latitude, coins[i].location!!.longitude)
 
-                    mMap.addMarker(
-                            MarkerOptions()
-                                    .position(coinLocation)
-                                    .title(coins[i].value.toString() + " $")
-                                    .snippet(coins[i].description)
-                                    .icon(BitmapDescriptorFactory.fromBitmap(playerMarker)))
-                    // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coinLocation, 14f))
-                } else {
-                    // catch it
-                    //   coins[i].isCatch = true
-                    // play the sound
-                    sound!!.playHitSound()
-                    // get the values( the points)
-                    score = score + coins[i].value!!
-                    scoreLabel!!.setText(" Score : ${score} ")
-                    coins[i].changeLocation(location,generate())
-                    coins[i].generateValue()
-                       Toast.makeText(this@MapsActivity," congratulations!!! you got ${coins[i].value!!} $ " , Toast.LENGTH_LONG).show()
-                    // remove from arraylist
+                mMap.addMarker(
+                        MarkerOptions()
+                                .position(coinLocation)
+                                .title(coins[i].value.toString() + " $")
+                                .snippet(coins[i].description)
+                                .icon(BitmapDescriptorFactory.fromBitmap(playerMarker)))
+                // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coinLocation, 14f))
+            } else {
+                // catch it
+
+                // play the sound
+                sound!!.playHitSound()
 
 
-                }
+                Toast.makeText(this@MapsActivity," congratulations!!! you got ${coins[i].value} $ " , Toast.LENGTH_LONG).show()
+                // get the values( the points)
+                score = score + coins[i].value
+                scoreLabel!!.text = " Score : ${score} "
+                coins[i].changeLocation(location, generate())
+                coins[i].generateValue()
+
+
+
+                //   }
 
             }
 
@@ -313,7 +320,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //send the intent to display the score
         var preferences = getSharedPreferences("PREFS", 0)
         var editor = preferences.edit()
-        editor.putInt("lastScore", score.toInt() )
+        editor.putInt("currentScore", score.toInt() )
+        editor.putInt("currentDistance", distance.toInt() )
+        editor.putInt("currentCalories", (distance * 15/320).toInt() )
+        editor.putString("date", currentDate.toString())
         editor.commit()
     }
 
@@ -335,14 +345,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    override
-    fun onBackPressed(){
-        var intent = Intent(applicationContext, HomeMenuActivity::class.java)
-        startActivity(intent)
-        finish()
+override
+fun onBackPressed(){
+    var intent = Intent(applicationContext, HomeMenuActivity::class.java)
+    startActivity(intent)
+    finish()
 
-    }
+}
     fun finish(view:View) {
-        startActivity(Intent(getApplicationContext(), ScoreActivity::class.java))
+        startActivity(Intent(applicationContext, ScoreActivity::class.java))
     }
 }
